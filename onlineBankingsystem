@@ -1,0 +1,177 @@
+import java.util.*;
+
+// Class to represent a bank account
+class Account {
+    private int accountNumber;
+    private String name;
+    private double balance;
+    private List<String> transactionHistory;
+
+    public Account(int accountNumber, String name, double initialDeposit) {
+        this.accountNumber = accountNumber;
+        this.name = name;
+        this.balance = initialDeposit;
+        transactionHistory = new ArrayList<>();
+        transactionHistory.add("Account created with balance: " + initialDeposit);
+    }
+
+    public int getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+        transactionHistory.add("Deposited: " + amount + ", New Balance: " + balance);
+    }
+
+    public boolean withdraw(double amount) {
+        if (amount > balance) {
+            System.out.println("Insufficient balance!");
+            return false;
+        }
+        balance -= amount;
+        transactionHistory.add("Withdrawn: " + amount + ", New Balance: " + balance);
+        return true;
+    }
+
+    public boolean transfer(Account target, double amount) {
+        if (withdraw(amount)) {
+            target.deposit(amount);
+            transactionHistory.add("Transferred: " + amount + " to Account " + target.getAccountNumber());
+            return true;
+        }
+        return false;
+    }
+
+    public void printTransactions() {
+        System.out.println("Transaction History for Account " + accountNumber + ":");
+        for (String t : transactionHistory) {
+            System.out.println(t);
+        }
+    }
+}
+
+// Main banking system
+public class OnlineBankingSystem {
+    private static Map<Integer, Account> accounts = new HashMap<>();
+    private static int nextAccountNumber = 1001;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("\n--- Online Banking System ---");
+            System.out.println("1. Create Account");
+            System.out.println("2. Deposit Money");
+            System.out.println("3. Withdraw Money");
+            System.out.println("4. Transfer Money");
+            System.out.println("5. Check Balance");
+            System.out.println("6. Transaction History");
+            System.out.println("7. Exit");
+            System.out.print("Choose an option: ");
+            
+            int choice = sc.nextInt();
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter your name: ");
+                    sc.nextLine(); // consume newline
+                    String name = sc.nextLine();
+                    System.out.print("Enter initial deposit: ");
+                    double deposit = sc.nextDouble();
+                    Account acc = new Account(nextAccountNumber, name, deposit);
+                    accounts.put(nextAccountNumber, acc);
+                    System.out.println("Account created successfully! Your account number: " + nextAccountNumber);
+                    nextAccountNumber++;
+                    break;
+
+                case 2:
+                    System.out.print("Enter account number: ");
+                    int accNumDeposit = sc.nextInt();
+                    Account accDeposit = accounts.get(accNumDeposit);
+                    if (accDeposit != null) {
+                        System.out.print("Enter amount to deposit: ");
+                        double amount = sc.nextDouble();
+                        accDeposit.deposit(amount);
+                        System.out.println("Deposit successful! New balance: " + accDeposit.getBalance());
+                    } else {
+                        System.out.println("Account not found!");
+                    }
+                    break;
+
+                case 3:
+                    System.out.print("Enter account number: ");
+                    int accNumWithdraw = sc.nextInt();
+                    Account accWithdraw = accounts.get(accNumWithdraw);
+                    if (accWithdraw != null) {
+                        System.out.print("Enter amount to withdraw: ");
+                        double amount = sc.nextDouble();
+                        if (accWithdraw.withdraw(amount)) {
+                            System.out.println("Withdraw successful! New balance: " + accWithdraw.getBalance());
+                        }
+                    } else {
+                        System.out.println("Account not found!");
+                    }
+                    break;
+
+                case 4:
+                    System.out.print("Enter your account number: ");
+                    int fromAccNum = sc.nextInt();
+                    Account fromAcc = accounts.get(fromAccNum);
+                    System.out.print("Enter target account number: ");
+                    int toAccNum = sc.nextInt();
+                    Account toAcc = accounts.get(toAccNum);
+                    if (fromAcc != null && toAcc != null) {
+                        System.out.print("Enter amount to transfer: ");
+                        double amount = sc.nextDouble();
+                        if (fromAcc.transfer(toAcc, amount)) {
+                            System.out.println("Transfer successful!");
+                        }
+                    } else {
+                        System.out.println("One of the accounts not found!");
+                    }
+                    break;
+
+                case 5:
+                    System.out.print("Enter account number: ");
+                    int accNumBalance = sc.nextInt();
+                    Account accBalance = accounts.get(accNumBalance);
+                    if (accBalance != null) {
+                        System.out.println("Balance: " + accBalance.getBalance());
+                    } else {
+                        System.out.println("Account not found!");
+                    }
+                    break;
+
+                case 6:
+                    System.out.print("Enter account number: ");
+                    int accNumHistory = sc.nextInt();
+                    Account accHistory = accounts.get(accNumHistory);
+                    if (accHistory != null) {
+                        accHistory.printTransactions();
+                    } else {
+                        System.out.println("Account not found!");
+                    }
+                    break;
+
+                case 7:
+                    exit = true;
+                    System.out.println("Thank you for Online Banking System!");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+
+        sc.close();
+    }
+}
